@@ -1,0 +1,68 @@
+{
+  "name": "@omnixys/logger",
+  "version": "0.1.0",
+  "type": "module",
+  "private": false,
+  "packageManager": "pnpm@9.12.0",
+  "description": "",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsup src/index.ts --format esm,cjs --dts",
+    "patch": "pnpm version patch",
+    "release": "semantic-release",
+    "lint": "biome lint",
+    "format": "biome format --write",
+    "lint:fix": "biome lint . --write",
+    "check": "biome check .",
+    "check:fix": "biome check --write",
+    "dev": "tsc -w",
+    "link": "pnpm link --global"
+  },
+  "keywords": [
+    "omnixys",
+    "logger",
+    "microservices"
+  ],
+  "license": "GPL-3.0-or-later",
+  "devDependencies": {
+    "@biomejs/biome": "^2.4.8",
+    "@commitlint/cli": "^20.5.0",
+    "@commitlint/config-conventional": "^20.4.2",
+    "@nestjs/core": "^11.1.17",
+    "@omnixys/kafka": "^4.0.0",
+    "@omnixys/observability": "^2.1.0",
+    "@omnixys/shared": "^2.0.1",
+    "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/commit-analyzer": "^13.0.1",
+    "@semantic-release/git": "^10.0.1",
+    "@semantic-release/github": "^12.0.6",
+    "@semantic-release/npm": "^13.1.5",
+    "@semantic-release/release-notes-generator": "^14.1.0",
+    "@swc/core": "^1.15.21",
+    "@types/node": "^25.5.0",
+    "lint-staged": "^16.4.0",
+    "semantic-release": "^25.0.3",
+    "tsup": "^8.5.1"
+  },
+  "peerDependencies": {
+    "@nestjs/common": "^11.0.0",
+    "@nestjs/core": "^11.1.17",
+    "@omnixys/kafka": "^4.0.0",
+    "@omnixys/observability": "^2.0.1",
+    "@omnixys/shared": "^2.0.1"
+  }
+}
