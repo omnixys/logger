@@ -8,6 +8,7 @@ on:
 jobs:
   release:
     runs-on: ubuntu-latest
+    name: Release ${{ vars.PACKAGE }} Package
 
     outputs:
       released: ${{ steps.semantic.outputs.released }}
@@ -86,6 +87,7 @@ jobs:
             --visibility all
 
   publish:
+    name: Publish ${{ vars.PACKAGE }} Package v${{ vars.CURRENT_VERSION }}
     if: needs.release.outputs.released == 'true'
     runs-on: ubuntu-latest
     needs: release
