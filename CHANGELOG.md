@@ -3,6 +3,23 @@
 All notable changes in this project will be documented in this file.
 
 
+## 1.0.0 (2026-03-23)
+
+### ⚠ BREAKING CHANGE
+
+* **Logger:** * complete introduction of new @omnixys/logger package
+* replaces all previous ad-hoc logging implementations
+* introduces structured, context-aware logging system
+* logging API is now scoped-based via OmnixysLogger.createScope()
+
+### Logger
+
+* **Logger:** introduce enterprise-grade structured logger with async batching and transport abstraction ([](https://github.com/omnixys/logger/commit/16294d12b408b3c50f674aab75ee884b95785177))
+
+### Other
+
+* **Other:** Initial commit ([](https://github.com/omnixys/logger/commit/1b2c098d34e921eb970bace676ddc3dbdfbc5ee2))
+
 ## [1.6.6](https://github.com/omnixys/observability/compare/v1.6.5...v1.6.6) (2026-03-18)
 
 ### U
