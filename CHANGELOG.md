@@ -3,6 +3,12 @@
 All notable changes in this project will be documented in this file.
 
 
+## [1.2.2](https://github.com/omnixys/logger/compare/v1.2.1...v1.2.2) (2026-03-24)
+
+### Logger
+
+* **Logger:** resolve NestJS DI failure caused by type-only import ([](https://github.com/omnixys/logger/commit/8652a81aae6c6df074326fd0293c581ac950fa8b))
+
 ## [1.2.1](https://github.com/omnixys/logger/compare/v1.2.0...v1.2.1) (2026-03-24)
 
 ### Logger
