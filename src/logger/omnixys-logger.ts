@@ -12,7 +12,7 @@ export class OmnixysLogger {
     private readonly batch: AsyncBatchLogger,
   ) {}
 
-  createScope(context: string): ScopedLogger {
+  log(context: string): ScopedLogger {
     return new ScopedLogger(context, this.options, this.batch);
   }
 }

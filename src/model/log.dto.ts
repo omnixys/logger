@@ -9,6 +9,6 @@ export interface LogDTO {
   traceId?: string;
   spanId?: string;
 
-  context?: string;
+  class?: string;
   metadata?: Record<string, any>;
 }

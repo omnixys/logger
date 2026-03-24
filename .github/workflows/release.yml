@@ -67,6 +67,7 @@ jobs:
       - name: Read version
         run: |
           echo "CURRENT_VERSION=$(node -p "require('./package.json').version")" >> $GITHUB_ENV
+          echo "CURRENT_VERSION=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
           echo "CURRENT_DATE=$(date -u +'%Y-%m-%d')" >> $GITHUB_ENV
 
       - name: Update repo variable
