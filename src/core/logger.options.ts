@@ -1,3 +1,5 @@
+import { KafkaTopics } from "@omnixys/kafka";
+
 export interface LoggerModuleOptions {
   serviceName: string;
 

@@ -43,7 +43,7 @@
     "@commitlint/cli": "^20.5.0",
     "@commitlint/config-conventional": "^20.4.2",
     "@nestjs/core": "^11.1.17",
-    "@omnixys/kafka": "^4.1.0",
+    "@omnixys/kafka": "^4.3.0",
     "@omnixys/observability": "^2.1.0",
     "@omnixys/shared": "^2.0.1",
     "@semantic-release/changelog": "^6.0.3",

@@ -5,6 +5,7 @@ import { LOGGER_OPTIONS } from "../core/logger.constants.js";
 import type { LoggerModuleOptions } from "../core/logger.options.js";
 import type { LogDTO } from "../model/log.dto.js";
 import type { LogTransport } from "./log-transport.interface.js";
+import { KafkaTopics } from '@omnixys/kafka';
 
 @Injectable()
 export class KafkaLogTransport implements LogTransport {
@@ -15,15 +16,16 @@ export class KafkaLogTransport implements LogTransport {
   ) {}
 
   async send(log: LogDTO): Promise<void> {
-    await this.producer.send(this.options.kafka!.topic!, {
-      eventId: crypto.randomUUID(),
-      eventName: "log.event",
-      eventVersion: "1",
+    const topic = this.options.kafka?.topic ?? 'log';
+    
+    await this.producer.send(
+      topic,
+      log,
+      {
+      version: "1",
       service: log.service,
-      operation: log.context ?? "unknown",
-      timestamp: log.timestamp,
-      payload: log,
-      metadata: {},
+        operation: "Log",
+      class: log.class
     });
   }
 }
