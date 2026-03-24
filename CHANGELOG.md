@@ -3,6 +3,16 @@
 All notable changes in this project will be documented in this file.
 
 
+## [1.2.1](https://github.com/omnixys/logger/compare/v1.2.0...v1.2.1) (2026-03-24)
+
+### Logger
+
+* **Logger:** add Scoped Logger ([](https://github.com/omnixys/logger/commit/2244499de6f0c16c406d9c243c57f59aa18a808c))
+
+### Other
+
+* **Other:** Merge branch 'main' of https://github.com/omnixys/logger ([](https://github.com/omnixys/logger/commit/167c5f17e3184796bce5f71eecb2506a00207abc))
+
 ## [1.2.0](https://github.com/omnixys/logger/compare/v1.1.0...v1.2.0) (2026-03-24)
 
 ### Kafka
