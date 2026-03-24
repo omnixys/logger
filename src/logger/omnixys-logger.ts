@@ -1,5 +1,5 @@
 import { Inject, Injectable } from "@nestjs/common";
-import type { AsyncBatchLogger } from "../batch/async-batch-logger.js";
+import { AsyncBatchLogger } from "../batch/async-batch-logger.js";
 import { LOGGER_OPTIONS } from "../core/logger.constants.js";
 import type { LoggerModuleOptions } from "../core/logger.options.js";
 import { ScopedLogger } from "./scoped-logger.js";

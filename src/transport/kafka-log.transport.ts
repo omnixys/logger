@@ -1,11 +1,10 @@
 import { Inject, Injectable } from "@nestjs/common";
-import type { KafkaProducerService } from "@omnixys/kafka";
+import { KafkaProducerService } from "@omnixys/kafka";
 
 import { LOGGER_OPTIONS } from "../core/logger.constants.js";
 import type { LoggerModuleOptions } from "../core/logger.options.js";
 import type { LogDTO } from "../model/log.dto.js";
 import type { LogTransport } from "./log-transport.interface.js";
-import { KafkaTopics } from '@omnixys/kafka';
 
 @Injectable()
 export class KafkaLogTransport implements LogTransport {

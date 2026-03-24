@@ -1,6 +1,6 @@
 import { TraceContextExtractor } from "@omnixys/observability";
 import { format } from "util";
-import type { AsyncBatchLogger } from "../batch/async-batch-logger.js";
+import { AsyncBatchLogger } from "../batch/async-batch-logger.js";
 import type { LoggerModuleOptions } from "../core/logger.options.js";
 import type { LogDTO } from "../model/log.dto.js";
 import { LogLevel } from "../model/log-level.enum.js";

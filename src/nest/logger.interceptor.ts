@@ -6,7 +6,7 @@ import {
 } from "@nestjs/common";
 
 import { type Observable, tap } from "rxjs";
-import type { OmnixysLogger } from "../logger/omnixys-logger.js";
+import { OmnixysLogger } from "../logger/omnixys-logger.js";
 
 type HttpRequest = {
   method?: string;
