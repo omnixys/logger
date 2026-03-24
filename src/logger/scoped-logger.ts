@@ -27,27 +27,27 @@ export class ScopedLogger {
     this.pino = getLogger(clazz, "class");
   }
 
-  info(message: string, metadata?: any) {
-    this.log(LogLevel.INFO, message, metadata);
+  info(message: string, ...args: unknown[]) {
+    this.log(LogLevel.INFO, message, ...args);
   }
 
-  error(message: string, metadata?: any) {
-    this.log(LogLevel.ERROR, message, metadata);
+  error(message: string, ...args: unknown[]) {
+    this.log(LogLevel.ERROR, message, ...args);
   }
 
-  warn(message: string, metadata?: any) {
-    this.log(LogLevel.WARN, message, metadata);
+  warn(message: string, ...args: unknown[]) {
+    this.log(LogLevel.WARN, message, ...args);
   }
 
-  debug(message: string, metadata?: any) {
-    this.log(LogLevel.DEBUG, message, metadata);
+  debug(message: string, ...args: unknown[]) {
+    this.log(LogLevel.DEBUG, message, ...args);
   }
 
-  trace(message: string, metadata?: any) {
-    this.log(LogLevel.TRACE, message, metadata);
+  trace(message: string, ...args: unknown[]) {
+    this.log(LogLevel.TRACE, message, ...args);
   }
 
-  private log(level: LogLevel, message: string, args: unknown[]) {
+  private log(level: LogLevel, message: string, ...args: unknown[]) {
     let metadata: Record<string, unknown> | undefined = {};
     let formatArgs = args;
 
