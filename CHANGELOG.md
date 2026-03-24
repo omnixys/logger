@@ -3,6 +3,12 @@
 All notable changes in this project will be documented in this file.
 
 
+## [1.1.0](https://github.com/omnixys/logger/compare/v1.0.1...v1.1.0) (2026-03-24)
+
+### Logger
+
+* **Logger:** update logger ([](https://github.com/omnixys/logger/commit/fab6c8e29ef832bb6c11aef095849e39297a3676))
+
 ## [1.0.1](https://github.com/omnixys/logger/compare/v1.0.0...v1.0.1) (2026-03-24)
 
 ### Logger
