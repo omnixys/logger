@@ -3,6 +3,12 @@
 All notable changes in this project will be documented in this file.
 
 
+## [1.2.0](https://github.com/omnixys/logger/compare/v1.1.0...v1.2.0) (2026-03-24)
+
+### Kafka
+
+* **Kafka:** update transport ([](https://github.com/omnixys/logger/commit/141e3bf14fbadad7ad508bc1cd45a28da5ccf5ee))
+
 ## [1.1.0](https://github.com/omnixys/logger/compare/v1.0.1...v1.1.0) (2026-03-24)
 
 ### Logger
