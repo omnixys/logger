@@ -3,6 +3,16 @@
 All notable changes in this project will be documented in this file.
 
 
+## [1.0.1](https://github.com/omnixys/logger/compare/v1.0.0...v1.0.1) (2026-03-24)
+
+### Logger
+
+* **Logger:** resolve type safety issues in scoped logger and stabilize DTS build ([](https://github.com/omnixys/logger/commit/d837bcb5959c72eb32577cdb7f57bb117d05588f))
+
+### Other
+
+* **Other:** Merge branch 'main' of https://github.com/omnixys/logger ([](https://github.com/omnixys/logger/commit/9c11c882b796f64bfd948e2a0444cd9bc45da2ff))
+
 ## 1.0.0 (2026-03-23)
 
 ### ⚠ BREAKING CHANGE
