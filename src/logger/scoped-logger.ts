@@ -1,6 +1,6 @@
 import { TraceContextExtractor } from "@omnixys/observability";
 import { format } from "util";
-import { AsyncBatchLogger } from "../batch/async-batch-logger.js";
+import type { AsyncBatchLogger } from "../batch/async-batch-logger.js";
 import type { LoggerModuleOptions } from "../core/logger.options.js";
 import type { LogDTO } from "../model/log.dto.js";
 import { LogLevel } from "../model/log-level.enum.js";
@@ -60,29 +60,33 @@ export class ScopedLogger {
       !Array.isArray(args[args.length - 1]) &&
       !hasPlaceholders // 🔥 WICHTIG
     ) {
-      metadata = safeSerialize(args[args.length - 1]) as Record<string, unknown>;
+      metadata = safeSerialize(args[args.length - 1]) as Record<
+        string,
+        unknown
+      >;
       formatArgs = args.slice(0, -1);
     }
 
-    const msg = format(message, ...formatArgs);
+    const normalizedArgs = formatArgs.map(normalizeObject);
+
+    const msg = format(message, ...normalizedArgs);
     const extractedArgs = mapArgsToMetadata(message, formatArgs);
+
+    const trace = TraceContextExtractor.current();
 
     metadata = {
       ...extractedArgs,
       ...metadata,
-      class: this.clazz,
+      clazz: this.clazz,
+      // traceId: trace?.traceId,
+      // spanId: trace?.spanId,
     };
-
-    const trace = TraceContextExtractor.current();
 
     const log: LogDTO = {
       level,
       message: msg,
       service: this.options.serviceName,
       timestamp: new Date().toISOString(),
-      class: this.clazz,
-      traceId: trace?.traceId,
-      spanId: trace?.spanId,
       metadata,
     };
 
@@ -149,7 +153,10 @@ function extractKeysFromMessage(message: string): string[] {
   return keys;
 }
 
-function mapArgsToMetadata(message: string, args: unknown[]): Record<string, unknown> {
+function mapArgsToMetadata(
+  message: string,
+  args: unknown[],
+): Record<string, unknown> {
   const metadata: Record<string, unknown> = {};
   const keys = extractKeysFromMessage(message);
 
@@ -164,4 +171,11 @@ function mapArgsToMetadata(message: string, args: unknown[]): Record<string, unk
   });
 
   return metadata;
+}
+
+function normalizeObject(value: unknown): unknown {
+  if (value && typeof value === "object" && !Array.isArray(value)) {
+    return { ...value }; // 🔥 entfernt null prototype
+  }
+  return value;
 }

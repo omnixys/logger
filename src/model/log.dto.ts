@@ -5,10 +5,10 @@ export interface LogDTO {
   message: string;
   service: string;
   timestamp: string;
-
-  traceId?: string;
-  spanId?: string;
-
-  class?: string;
   metadata?: Record<string, any>;
+}
+
+export interface ContextLogDTO {
+  log: LogDTO;
+  ctx: any;
 }

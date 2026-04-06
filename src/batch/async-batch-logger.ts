@@ -1,12 +1,13 @@
 import { Inject, Injectable, type OnModuleInit } from "@nestjs/common";
 import { LOG_TRANSPORT, LOGGER_OPTIONS } from "../core/logger.constants.js";
 import type { LoggerModuleOptions } from "../core/logger.options.js";
-import type { LogDTO } from "../model/log.dto.js";
+import type { ContextLogDTO, LogDTO } from "../model/log.dto.js";
 import type { LogTransport } from "../transport/log-transport.interface.js";
+import { ContextStore } from "@omnixys/observability";
 
 @Injectable()
 export class AsyncBatchLogger implements OnModuleInit {
-  private buffer: LogDTO[] = [];
+  private buffer: ContextLogDTO[] = [];
   private timer?: NodeJS.Timeout;
 
   constructor(
@@ -19,7 +20,10 @@ export class AsyncBatchLogger implements OnModuleInit {
   onModuleInit() {
     if (!this.options.batch?.enabled) return;
 
-    this.timer = setInterval(() => this.flush(), this.options.batch.flushInterval ?? 2000);
+    this.timer = setInterval(
+      () => this.flush(),
+      this.options.batch.flushInterval ?? 2000,
+    );
   }
 
   enqueue(log: LogDTO) {
@@ -28,17 +32,22 @@ export class AsyncBatchLogger implements OnModuleInit {
       return;
     }
 
-    this.buffer.push(log);
+    const ctx = ContextStore.capture(); // 🔥 NO OTel import
+
+    this.buffer.push({ log, ctx });
 
     if (this.buffer.length >= (this.options.batch.maxSize ?? 50)) {
       this.flush();
     }
   }
-
   private async flush() {
-    const logs = [...this.buffer];
+    const batch = [...this.buffer];
     this.buffer = [];
 
-    await Promise.all(logs.map((l) => this.transport.send(l)));
+    await Promise.all(
+      batch.map(({ log, ctx }) =>
+        ContextStore.run(ctx, () => this.transport.send(log)),
+      ),
+    );
   }
 }
