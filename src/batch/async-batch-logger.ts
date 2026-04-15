@@ -1,9 +1,9 @@
 import { Inject, Injectable, type OnModuleInit } from "@nestjs/common";
 import { LOG_TRANSPORT, LOGGER_OPTIONS } from "../core/logger.constants.js";
 import type { LoggerModuleOptions } from "../core/logger.options.js";
-import type { ContextLogDTO, LogDTO } from "../model/log.dto.js";
 import type { LogTransport } from "../transport/log-transport.interface.js";
 import { ContextStore } from "@omnixys/observability";
+import { ContextLogDTO, LogDTO } from "@omnixys/shared";
 
 @Injectable()
 export class AsyncBatchLogger implements OnModuleInit {

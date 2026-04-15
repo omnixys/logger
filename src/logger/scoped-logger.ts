@@ -2,9 +2,9 @@ import { TraceContextExtractor } from "@omnixys/observability";
 import { format } from "util";
 import type { AsyncBatchLogger } from "../batch/async-batch-logger.js";
 import type { LoggerModuleOptions } from "../core/logger.options.js";
-import type { LogDTO } from "../model/log.dto.js";
-import { LogLevel } from "../model/log-level.enum.js";
+
 import { getLogger } from "./get-logger.js";
+import { LogDTO, LogLevel } from "@omnixys/shared";
 
 const levelMap = {
   trace: "trace",
@@ -28,23 +28,23 @@ export class ScopedLogger {
   }
 
   info(message: string, ...args: unknown[]) {
-    this.log(LogLevel.INFO, message, ...args);
+    this.log(LogLevel.info, message, ...args);
   }
 
   error(message: string, ...args: unknown[]) {
-    this.log(LogLevel.ERROR, message, ...args);
+    this.log(LogLevel.error, message, ...args);
   }
 
   warn(message: string, ...args: unknown[]) {
-    this.log(LogLevel.WARN, message, ...args);
+    this.log(LogLevel.warn, message, ...args);
   }
 
   debug(message: string, ...args: unknown[]) {
-    this.log(LogLevel.DEBUG, message, ...args);
+    this.log(LogLevel.debug, message, ...args);
   }
 
   trace(message: string, ...args: unknown[]) {
-    this.log(LogLevel.TRACE, message, ...args);
+    this.log(LogLevel.trace, message, ...args);
   }
 
   private log(level: LogLevel, message: string, ...args: unknown[]) {

@@ -1,10 +1,10 @@
 {
   "name": "@omnixys/logger",
   "version": "1.2.2",
+  "description": "A NestJS logger module for microservices, providing structured logging and integration with various log transports.",
   "type": "module",
   "private": false,
   "packageManager": "pnpm@9.12.0",
-  "description": "",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
@@ -21,14 +21,10 @@
   },
   "sideEffects": false,
   "scripts": {
-    "build": "tsup src/index.ts --format esm,cjs --dts",
+    "build": "tsc -p tsconfig.json",
+    "clean": "rimraf dist",
     "patch": "pnpm version patch",
     "release": "semantic-release",
-    "lint": "biome lint",
-    "format": "biome format --write",
-    "lint:fix": "biome lint . --write",
-    "check": "biome check .",
-    "check:fix": "biome check --write",
     "dev": "tsc -w",
     "link": "pnpm link --global"
   },
@@ -39,13 +35,12 @@
   ],
   "license": "GPL-3.0-or-later",
   "devDependencies": {
-    "@biomejs/biome": "^2.4.8",
     "@commitlint/cli": "^20.5.0",
     "@commitlint/config-conventional": "^20.4.2",
     "@nestjs/core": "^11.1.17",
-    "@omnixys/kafka": "file:../kafka",
-    "@omnixys/observability": "file:../observability",
-    "@omnixys/shared": "file:../shared",
+    "@omnixys/kafka": "^1.0.0",
+    "@omnixys/observability": "^1.0.0",
+    "@omnixys/shared": "^1.0.0",
     "@semantic-release/changelog": "^6.0.3",
     "@semantic-release/commit-analyzer": "^13.0.1",
     "@semantic-release/git": "^10.0.1",
@@ -61,9 +56,9 @@
   "peerDependencies": {
     "@nestjs/common": "^11.0.0",
     "@nestjs/core": "^11.1.17",
-    "@omnixys/kafka": "file:../kafka",
-    "@omnixys/observability": "file:../observability",
-    "@omnixys/shared": "file:../shared"
+    "@omnixys/kafka": "^1.0.0",
+    "@omnixys/observability": "^1.0.0",
+    "@omnixys/shared": "^1.0.0"
   },
   "dependencies": {
     "pino": "^10.3.1",

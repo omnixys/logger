@@ -1,4 +1,4 @@
-import type { LogDTO } from "../model/log.dto.js";
+import { LogDTO } from "@omnixys/shared";
 
 export interface LogTransport {
   send(log: LogDTO): Promise<void>;

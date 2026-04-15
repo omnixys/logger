@@ -1,11 +1,11 @@
 import { Inject, Injectable } from "@nestjs/common";
-import { KafkaProducerService } from "@omnixys/kafka";
+import { KafkaEventRegistry, KafkaProducerService, KafkaTopics } from "@omnixys/kafka";
 
 
 import { LOGGER_OPTIONS } from "../core/logger.constants.js";
 import type { LoggerModuleOptions } from "../core/logger.options.js";
-import type { LogDTO } from "../model/log.dto.js";
 import type { LogTransport } from "./log-transport.interface.js";
+import { LogDTO } from "@omnixys/shared";
 
 @Injectable()
 export class KafkaLogTransport implements LogTransport {
@@ -16,7 +16,8 @@ export class KafkaLogTransport implements LogTransport {
   ) {}
 
   async send(log: LogDTO): Promise<void> {
-    const topic = this.options.kafka?.topic ?? 'log';
+    const topic =
+      (this.options.kafka?.topic as keyof KafkaEventRegistry) || KafkaTopics.logstream.log;
     
       await this.producer.send({
         topic,
@@ -27,6 +28,8 @@ export class KafkaLogTransport implements LogTransport {
           operation: "Log",
           clazz: log.metadata?.class,
           type: "EVENT",
+          actorId: 'system', // TODO actor hinzufügen vom log context
+          tenantId: 'omnixys',
         },
       });
   }
