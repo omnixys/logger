@@ -3,6 +3,153 @@
 All notable changes in this project will be documented in this file.
 
 
+## 1.0.0 (2026-04-15)
+
+### ⚠ BREAKING CHANGE
+
+* **Logger:** Complete redesign of logging system with structured logging, context awareness,
+and tight integration with @omnixys/context and @omnixys/observability.
+Legacy logging utilities and unstructured log patterns have been removed.
+
+✨ Features:
+- Structured logging (JSON-first) for production-grade observability
+- Context-aware logging:
+  - Automatic injection of requestId, tenantId, actorId
+  - Integration with AsyncLocalStorage via @omnixys/context
+- Trace correlation:
+  - Automatic linking of logs to OpenTelemetry traces/spans
+  - traceId and spanId enrichment
+- OmnixysLogger abstraction:
+  - log(), info(), warn(), error(), debug()
+  - Scoped loggers per service/class/module
+- Child logger support with contextual metadata
+- Built-in log formatting and normalization
+- Error logging with stack trace and structured metadata
+- Environment-aware configuration (dev vs prod logging behavior)
+
+⚙️ Improvements:
+- Strongly typed logging APIs
+- Eliminated console.log and inconsistent logging patterns
+- Standardized log structure across all services
+- Improved debuggability in distributed systems
+- Reduced noise through consistent log levels and formatting
+
+🧱 Architecture:
+- Lightweight abstraction over structured logging engine (e.g. pino-compatible)
+- Tight integration with:
+  - @omnixys/context (request-scoped metadata)
+  - @omnixys/observability (trace correlation)
+- Scoped logger instances for modular logging
+- Designed for high-throughput microservices
+
+🛑 Removed / Changed:
+- Removed unstructured logging and ad-hoc logger usage
+- Replaced manual metadata injection with automatic context binding
+- Deprecated inconsistent log formats and message patterns
+
+📦 Compatibility:
+- Requires Node.js >= 20
+- Designed for NestJS-based microservices
+- Fully compatible with:
+  - @omnixys/context (request context propagation)
+  - @omnixys/observability (tracing integration)
+  - @omnixys/kafka (event-level logging)
+  - @omnixys/security (audit & security logs)
+
+📚 Notes:
+This release establishes a unified, structured logging foundation across all
+Omnixys services, enabling traceable, searchable, and context-rich logs for
+modern distributed architectures.
+* **Logger:** Complete redesign of logging system with structured logging, context awareness,
+and tight integration with @omnixys/context and @omnixys/observability.
+Legacy logging utilities and unstructured log patterns have been removed.
+
+✨ Features:
+- Structured logging (JSON-first) for production-grade observability
+- Context-aware logging:
+  - Automatic injection of requestId, tenantId, actorId
+  - Integration with AsyncLocalStorage via @omnixys/context
+- Trace correlation:
+  - Automatic linking of logs to OpenTelemetry traces/spans
+  - traceId and spanId enrichment
+- OmnixysLogger abstraction:
+  - log(), info(), warn(), error(), debug()
+  - Scoped loggers per service/class/module
+- Child logger support with contextual metadata
+- Built-in log formatting and normalization
+- Error logging with stack trace and structured metadata
+- Environment-aware configuration (dev vs prod logging behavior)
+
+⚙️ Improvements:
+- Strongly typed logging APIs
+- Eliminated console.log and inconsistent logging patterns
+- Standardized log structure across all services
+- Improved debuggability in distributed systems
+- Reduced noise through consistent log levels and formatting
+
+🧱 Architecture:
+- Lightweight abstraction over structured logging engine (e.g. pino-compatible)
+- Tight integration with:
+  - @omnixys/context (request-scoped metadata)
+  - @omnixys/observability (trace correlation)
+- Scoped logger instances for modular logging
+- Designed for high-throughput microservices
+
+🛑 Removed / Changed:
+- Removed unstructured logging and ad-hoc logger usage
+- Replaced manual metadata injection with automatic context binding
+- Deprecated inconsistent log formats and message patterns
+
+📦 Compatibility:
+- Requires Node.js >= 20
+- Designed for NestJS-based microservices
+- Fully compatible with:
+  - @omnixys/context (request context propagation)
+  - @omnixys/observability (tracing integration)
+  - @omnixys/kafka (event-level logging)
+  - @omnixys/security (audit & security logs)
+
+📚 Notes:
+This release establishes a unified, structured logging foundation across all
+Omnixys services, enabling traceable, searchable, and context-rich logs for
+modern distributed architectures.
+* **Logger:** * complete introduction of new @omnixys/logger package
+* replaces all previous ad-hoc logging implementations
+* introduces structured, context-aware logging system
+* logging API is now scoped-based via OmnixysLogger.createScope()
+
+### Kafka
+
+* **Kafka:** update transport ([](https://github.com/omnixys/logger/commit/141e3bf14fbadad7ad508bc1cd45a28da5ccf5ee))
+
+### Logger
+
+* **Logger:** introduce enterprise-grade structured logger with async batching and transport abstraction ([](https://github.com/omnixys/logger/commit/16294d12b408b3c50f674aab75ee884b95785177))
+* **Logger:** structured logging, context-aware logs & trace correlation ([](https://github.com/omnixys/logger/commit/0aefdd0117732c42e1e87a53f1c66f8417b46530))
+* **Logger:** structured logging, context-aware logs & trace correlation ([](https://github.com/omnixys/logger/commit/3e30fa277a115e3187798850262832e95ebe469a))
+* **Logger:** v1.0.0 ([](https://github.com/omnixys/logger/commit/df78b4cbaa8efa133647441aac40f46e4d76a7e0))
+* **Logger:** update logger ([](https://github.com/omnixys/logger/commit/fab6c8e29ef832bb6c11aef095849e39297a3676))
+* **Logger:** add Scoped Logger ([](https://github.com/omnixys/logger/commit/2244499de6f0c16c406d9c243c57f59aa18a808c))
+* **Logger:** resolve NestJS DI failure caused by type-only import ([](https://github.com/omnixys/logger/commit/8652a81aae6c6df074326fd0293c581ac950fa8b))
+* **Logger:** resolve type safety issues in scoped logger and stabilize DTS build ([](https://github.com/omnixys/logger/commit/d837bcb5959c72eb32577cdb7f57bb117d05588f))
+
+### Other
+
+* **Other:** breaking(logger: )Propagate context and normalize log payloads ([](https://github.com/omnixys/logger/commit/05267fb67cec4cfcb115ded3e0dbd47e3e0ca8ed))
+* **Other:** Initial commit ([](https://github.com/omnixys/logger/commit/1b2c098d34e921eb970bace676ddc3dbdfbc5ee2))
+* **Other:** Merge branch 'main' of https://github.com/omnixys/logger ([](https://github.com/omnixys/logger/commit/167c5f17e3184796bce5f71eecb2506a00207abc))
+* **Other:** Merge branch 'main' of https://github.com/omnixys/logger ([](https://github.com/omnixys/logger/commit/9c11c882b796f64bfd948e2a0444cd9bc45da2ff))
+
+### Release
+
+* **Release:** 1.0.0 [skip ci] ([](https://github.com/omnixys/logger/commit/01a082f469bd29fd8924a9cb37898851e3271fb8))
+* **Release:** 1.0.0 [skip ci] ([](https://github.com/omnixys/logger/commit/7835d4b7612016c560d105e935a0d8936d29eebe))
+* **Release:** 1.0.1 [skip ci] ([](https://github.com/omnixys/logger/commit/620d8a5e56362f6ebbda9a18518842d4db8a0aaa))
+* **Release:** 1.1.0 [skip ci] ([](https://github.com/omnixys/logger/commit/0d48a3ab9951bc05616130002ce12b2466691734))
+* **Release:** 1.2.0 [skip ci] ([](https://github.com/omnixys/logger/commit/af1980d7690a6cde3875d36723755eb8ccc092de))
+* **Release:** 1.2.1 [skip ci] ([](https://github.com/omnixys/logger/commit/acbe02ba01b8d9094b4703f4d46a279b330c9143))
+* **Release:** 1.2.2 [skip ci] ([](https://github.com/omnixys/logger/commit/e77764636186b93aba3d8bb6737afb66f9e4f214))
+
 ## [1.2.2](https://github.com/omnixys/logger/compare/v1.2.1...v1.2.2) (2026-03-24)
 
 ### Logger
