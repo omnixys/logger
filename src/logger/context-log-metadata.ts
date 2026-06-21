@@ -1,8 +1,8 @@
-import { ContextAccessor } from "@omnixys/context";
+import { ContextAccessor } from "@omnixys/context/accessor";
 
 export interface CanonicalLogMetadata {
-  readonly requestId?: string;
-  readonly correlationId?: string;
+  readonly requestId: string;
+  readonly correlationId: string;
   readonly tenantId?: string;
   readonly actorId?: string;
   readonly userId?: string;
@@ -15,8 +15,9 @@ export function getCanonicalLogMetadata(): CanonicalLogMetadata {
   const context = ContextAccessor.get();
 
   return {
-    requestId: context?.requestId,
-    correlationId: context?.correlationId,
+    requestId: context?.requestId ?? "unscoped",
+    correlationId:
+      context?.correlationId ?? context?.requestId ?? "unscoped",
     tenantId: context?.tenant?.tenantId,
     actorId: context?.principal?.actorId,
     userId:

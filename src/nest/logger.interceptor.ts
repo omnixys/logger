@@ -4,7 +4,7 @@ import {
   Injectable,
   type NestInterceptor,
 } from "@nestjs/common";
-import { ContextAccessor } from "@omnixys/context";
+import { ContextAccessor } from "@omnixys/context/accessor";
 
 import { type Observable, tap } from "rxjs";
 import { OmnixysLogger } from "../logger/omnixys-logger.js";
