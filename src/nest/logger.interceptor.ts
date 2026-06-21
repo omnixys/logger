@@ -17,6 +17,7 @@ type HttpRequest = {
   headers?: Record<string, any>;
   ip?: string;
   user?: { id?: string };
+  body?: { operationName?: string };
 };
 
 type HttpResponse = {
@@ -28,18 +29,20 @@ export class LoggingInterceptor implements NestInterceptor {
   constructor(private readonly logger: OmnixysLogger) {}
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
-    if (context.getType() !== "http") {
+    const transport = requestTransport(context);
+    if (!transport) {
       return next.handle();
     }
 
-    const http = context.switchToHttp();
+    const { request, response, type } = transport;
 
-    const request = http.getRequest<HttpRequest>();
-    const response = http.getResponse<HttpResponse>();
+    const method = type === "graphql" ? "GRAPHQL" : request.method ?? "UNKNOWN";
 
-    const method = request.method ?? "UNKNOWN";
-
-    const url = request.originalUrl ?? request.url ?? "UNKNOWN";
+    const url =
+      request.body?.operationName ??
+      request.originalUrl ??
+      request.url ??
+      "UNKNOWN";
 
     const requestContext = ContextAccessor.get();
     const userAgent =
@@ -95,6 +98,42 @@ export class LoggingInterceptor implements NestInterceptor {
       }),
     );
   }
+}
+
+function requestTransport(
+  context: ExecutionContext,
+):
+  | { request: HttpRequest; response: HttpResponse; type: "http" | "graphql" }
+  | undefined {
+  const type = context.getType<string>();
+
+  if (type === "http") {
+    const http = context.switchToHttp();
+    return {
+      request: http.getRequest<HttpRequest>(),
+      response: http.getResponse<HttpResponse>(),
+      type,
+    };
+  }
+
+  if (type === "graphql") {
+    const gqlContext = context.getArgByIndex<{
+      req?: HttpRequest;
+      request?: HttpRequest;
+      reply?: HttpResponse;
+      res?: HttpResponse;
+    }>(2);
+    const request = gqlContext?.req ?? gqlContext?.request;
+    if (!request) return undefined;
+
+    return {
+      request,
+      response: gqlContext.reply ?? gqlContext.res ?? {},
+      type,
+    };
+  }
+
+  return undefined;
 }
 
 /**

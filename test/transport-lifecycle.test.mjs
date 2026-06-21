@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { LOG_TRANSPORT } from "../dist/core/logger.constants.js";
 import { LoggerModule } from "../dist/core/logger.module.js";
+import { LoggingInterceptor } from "../dist/nest/logger.interceptor.js";
+import { APP_INTERCEPTOR } from "@nestjs/core";
 import {
   closeParentLogger,
   installLoggerShutdownHooks,
@@ -29,6 +31,26 @@ test("module registers exactly one transport for every configuration", () => {
   assert.equal(localTransports[0].useClass, NoopLogTransport);
   assert.equal(kafkaTransports.length, 1);
   assert.equal(kafkaTransports[0].useClass, KafkaLogTransport);
+});
+
+test("global request logging is explicit and uses the existing interceptor", () => {
+  const disabled = LoggerModule.forRoot({ serviceName: "disabled" });
+  const enabled = LoggerModule.forRoot({
+    serviceName: "enabled",
+    registerGlobalInterceptor: true,
+  });
+
+  assert.equal(
+    disabled.providers.some((provider) => provider.provide === APP_INTERCEPTOR),
+    false,
+  );
+  assert.ok(
+    enabled.providers.some(
+      (provider) =>
+        provider.provide === APP_INTERCEPTOR &&
+        provider.useExisting === LoggingInterceptor,
+    ),
+  );
 });
 
 test("shutdown hook initialization and cleanup are idempotent", () => {

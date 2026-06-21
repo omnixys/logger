@@ -1,6 +1,9 @@
 export interface LoggerModuleOptions {
   serviceName: string;
 
+  /** Register request logging globally for HTTP and GraphQL operations. */
+  registerGlobalInterceptor?: boolean;
+
   kafka?: {
     enabled?: boolean;
     topic?: string;

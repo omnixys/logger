@@ -90,3 +90,42 @@ test("HTTP logging fallback never reads x-forwarded-for directly", async () => {
 
   assert.equal(entries[0].ip, "10.0.0.8");
 });
+
+test("GraphQL operations are logged with canonical request metadata", async () => {
+  const entries = [];
+  const interceptor = new LoggingInterceptor({
+    log: () => ({
+      info: (message, metadata) => entries.push({ message, metadata }),
+      error: (message, metadata) => entries.push({ message, metadata }),
+    }),
+  });
+  const executionContext = {
+    getType: () => "graphql",
+    getArgByIndex: () => ({
+      req: {
+        url: "/graphql",
+        body: { operationName: "CreateEvent" },
+        headers: {},
+      },
+      reply: { statusCode: 200 },
+    }),
+  };
+
+  await ContextAccessor.run(
+    {
+      requestId: "request-graphql",
+      correlationId: "correlation-graphql",
+      client: {},
+      transport: { type: "graphql", operationName: "CreateEvent" },
+    },
+    () =>
+      lastValueFrom(
+        interceptor.intercept(executionContext, { handle: () => of("ok") }),
+      ),
+  );
+
+  assert.equal(entries[0].metadata.method, "GRAPHQL");
+  assert.equal(entries[0].metadata.url, "CreateEvent");
+  assert.equal(entries[0].metadata.requestId, "request-graphql");
+  assert.equal(entries[1].metadata.statusCode, 200);
+});
