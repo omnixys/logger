@@ -6,6 +6,7 @@ import { NoopLogTransport } from "../transport/noop-log.transport.js";
 import { installLoggerShutdownHooks } from "../logger/logger.config.js";
 import { LOG_TRANSPORT, LOGGER_OPTIONS } from "./logger.constants.js";
 import type { LoggerModuleOptions } from "./logger.options.js";
+import { OMNIXYS_LOGGER } from "../token.js";
 
 @Global()
 @Module({})
@@ -20,6 +21,7 @@ export class LoggerModule {
 
         AsyncBatchLogger,
         OmnixysLogger,
+        { provide: OMNIXYS_LOGGER, useExisting: OmnixysLogger },
 
         {
           provide: LOG_TRANSPORT,
@@ -28,7 +30,7 @@ export class LoggerModule {
             : NoopLogTransport,
         },
       ],
-      exports: [OmnixysLogger],
+      exports: [OmnixysLogger, OMNIXYS_LOGGER],
     };
   }
 }
