@@ -5,7 +5,7 @@ import {
   type OnModuleInit,
 } from "@nestjs/common";
 import { ContextStore } from "@omnixys/observability";
-import { type ContextLogDTO, type LogDTO } from "@omnixys/shared";
+import { type ContextLogDTO, type LogDTO } from "@omnixys/contracts";
 import { LOG_TRANSPORT, LOGGER_OPTIONS } from "../core/logger.constants.js";
 import type { LoggerModuleOptions } from "../core/logger.options.js";
 import type { LogTransport } from "../transport/log-transport.interface.js";

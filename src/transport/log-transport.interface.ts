@@ -1,4 +1,4 @@
-import { LogDTO } from "@omnixys/shared";
+import { LogDTO } from "@omnixys/contracts";
 
 export interface LogTransport {
   send(log: LogDTO): Promise<void>;

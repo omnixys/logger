@@ -5,7 +5,7 @@ import { KafkaEventRegistry, KafkaProducerService, KafkaTopics } from "@omnixys/
 import { LOGGER_OPTIONS } from "../core/logger.constants.js";
 import type { LoggerModuleOptions } from "../core/logger.options.js";
 import type { LogTransport } from "./log-transport.interface.js";
-import { LogDTO } from "@omnixys/shared";
+import { LogDTO } from "@omnixys/contracts";
 
 @Injectable()
 export class KafkaLogTransport implements LogTransport {

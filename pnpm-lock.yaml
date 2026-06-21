@@ -33,15 +33,15 @@ importers:
       '@omnixys/context':
         specifier: file:../context
         version: file:../context(@fastify/cookie@11.0.2)(@nestjs/common@11.1.17(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.17(@nestjs/common@11.1.17(reflect-metadata@0.2.2)(rxjs@7.8.2))(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/graphql@13.2.5(@nestjs/common@11.1.17(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.17(@nestjs/common@11.1.17(reflect-metadata@0.2.2)(rxjs@7.8.2))(reflect-metadata@0.2.2)(rxjs@7.8.2))(graphql@16.13.2)(reflect-metadata@0.2.2))(@omnixys/shared@1.0.0(@nestjs/common@11.1.17(reflect-metadata@0.2.2)(rxjs@7.8.2)))(fastify@5.8.5)(graphql@16.13.2)(rxjs@7.8.2)
+      '@omnixys/contracts':
+        specifier: file:../contracts
+        version: file:../contracts
       '@omnixys/kafka':
         specifier: ^1.0.0
         version: 1.0.0(@nestjs/common@11.1.17(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.17(@nestjs/common@11.1.17(reflect-metadata@0.2.2)(rxjs@7.8.2))(reflect-metadata@0.2.2)(rxjs@7.8.2))(@omnixys/cache@1.0.0(@nestjs/common@11.1.17(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.17(@nestjs/common@11.1.17(reflect-metadata@0.2.2)(rxjs@7.8.2))(reflect-metadata@0.2.2)(rxjs@7.8.2))(@omnixys/observability@file:../observability(9510dbdcc712a78a2f66f86f6e70cf0c))(@omnixys/security@1.0.0(c37a146a0f207f5d409453a91fc30775))(@omnixys/shared@1.0.0(@nestjs/common@11.1.17(reflect-metadata@0.2.2)(rxjs@7.8.2))))(@omnixys/observability@file:../observability(9510dbdcc712a78a2f66f86f6e70cf0c))(@omnixys/shared@1.0.0(@nestjs/common@11.1.17(reflect-metadata@0.2.2)(rxjs@7.8.2)))
       '@omnixys/observability':
         specifier: file:../observability
         version: file:../observability(9510dbdcc712a78a2f66f86f6e70cf0c)
-      '@omnixys/shared':
-        specifier: ^1.0.0
-        version: 1.0.0(@nestjs/common@11.1.17(reflect-metadata@0.2.2)(rxjs@7.8.2))
       '@opentelemetry/api':
         specifier: ^1.9.0
         version: 1.9.1
@@ -597,6 +597,10 @@ packages:
       fastify: ^5.8.4
       graphql: ^16.13.2
       rxjs: ^7.8.2
+
+  '@omnixys/contracts@file:../contracts':
+    resolution: {directory: ../contracts, type: directory}
+    engines: {node: '>=20'}
 
   '@omnixys/kafka@1.0.0':
     resolution: {integrity: sha512-0LewyrDX3lsEm/U0xDofrirI9BOdh+UGuyLBBs7a8exPqb4RLgcCRQewr6JGF0dwqWXEFHO1igPZ+eHyrTIXLg==, tarball: https://npm.pkg.github.com/download/@omnixys/kafka/1.0.0/5f62d3b090729f80c74074b14b837b6b6d8cdde9}
@@ -3592,6 +3596,9 @@ packages:
     resolution: {integrity: sha512-CzhO+pFNo8ajLM2d2IW/R93ipy99LWjtwblvC1RsoSUMZgyLbYFr221TnSNT7GjGdYui6P459mw9JH/g/zW2ug==}
     engines: {node: '>=18'}
 
+  zod@4.4.3:
+    resolution: {integrity: sha512-ytENFjIJFl2UwYglde2jchW2Hwm4GJFLDiSXWdTrJQBIN9Fcyp7n4DhxJEiWNAJMV1/BqWfW/kkg71UDcHJyTQ==}
+
 snapshots:
 
   '@actions/core@3.0.0':
@@ -4077,6 +4084,10 @@ snapshots:
       graphql: 16.13.2
       rxjs: 7.8.2
       ua-parser-js: 1.0.41
+
+  '@omnixys/contracts@file:../contracts':
+    dependencies:
+      zod: 4.4.3
 
   '@omnixys/kafka@1.0.0(@nestjs/common@11.1.17(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.17(@nestjs/common@11.1.17(reflect-metadata@0.2.2)(rxjs@7.8.2))(reflect-metadata@0.2.2)(rxjs@7.8.2))(@omnixys/cache@1.0.0(@nestjs/common@11.1.17(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.17(@nestjs/common@11.1.17(reflect-metadata@0.2.2)(rxjs@7.8.2))(reflect-metadata@0.2.2)(rxjs@7.8.2))(@omnixys/observability@file:../observability(9510dbdcc712a78a2f66f86f6e70cf0c))(@omnixys/security@1.0.0(c37a146a0f207f5d409453a91fc30775))(@omnixys/shared@1.0.0(@nestjs/common@11.1.17(reflect-metadata@0.2.2)(rxjs@7.8.2))))(@omnixys/observability@file:../observability(9510dbdcc712a78a2f66f86f6e70cf0c))(@omnixys/shared@1.0.0(@nestjs/common@11.1.17(reflect-metadata@0.2.2)(rxjs@7.8.2)))':
     dependencies:
@@ -7178,3 +7189,5 @@ snapshots:
       fd-slicer: 1.1.0
 
   yoctocolors@2.1.2: {}
+
+  zod@4.4.3: {}
