@@ -2,6 +2,8 @@ import { type DynamicModule, Global, Module } from "@nestjs/common";
 import { AsyncBatchLogger } from "../batch/async-batch-logger.js";
 import { OmnixysLogger } from "../logger/omnixys-logger.js";
 import { KafkaLogTransport } from "../transport/kafka-log.transport.js";
+import { NoopLogTransport } from "../transport/noop-log.transport.js";
+import { installLoggerShutdownHooks } from "../logger/logger.config.js";
 import { LOG_TRANSPORT, LOGGER_OPTIONS } from "./logger.constants.js";
 import type { LoggerModuleOptions } from "./logger.options.js";
 
@@ -9,6 +11,8 @@ import type { LoggerModuleOptions } from "./logger.options.js";
 @Module({})
 export class LoggerModule {
   static forRoot(options: LoggerModuleOptions): DynamicModule {
+    installLoggerShutdownHooks();
+
     return {
       module: LoggerModule,
       providers: [
@@ -17,14 +21,12 @@ export class LoggerModule {
         AsyncBatchLogger,
         OmnixysLogger,
 
-        ...(options.kafka?.enabled
-          ? [
-              {
-                provide: LOG_TRANSPORT,
-                useClass: KafkaLogTransport,
-              },
-            ]
-          : []),
+        {
+          provide: LOG_TRANSPORT,
+          useClass: options.kafka?.enabled
+            ? KafkaLogTransport
+            : NoopLogTransport,
+        },
       ],
       exports: [OmnixysLogger],
     };

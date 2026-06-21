@@ -1,9 +1,15 @@
-import { TraceContextExtractor } from "@omnixys/observability";
 import { format } from "util";
 import type { AsyncBatchLogger } from "../batch/async-batch-logger.js";
 import type { LoggerModuleOptions } from "../core/logger.options.js";
 
 import { getLogger } from "./get-logger.js";
+import {
+  closeParentLogger,
+  flushParentLogger,
+  isParentLoggerClosed,
+} from "./logger.config.js";
+import { isTransportLoggingSuppressed } from "../transport/transport-recursion.guard.js";
+import { getCanonicalLogMetadata } from "./context-log-metadata.js";
 import { LogDTO, LogLevel } from "@omnixys/shared";
 
 const levelMap = {
@@ -15,16 +21,59 @@ const levelMap = {
 } as const;
 
 type PinoLevel = keyof typeof levelMap;
+export type LoggerMetadata = Readonly<Record<string, unknown>>;
 
 export class ScopedLogger {
   private readonly pino;
+  private readonly baseMetadata: LoggerMetadata;
 
   constructor(
     private readonly clazz: string,
     private readonly options: LoggerModuleOptions,
     private readonly batch: AsyncBatchLogger,
+    metadata: LoggerMetadata = {},
+    private readonly component?: string,
   ) {
     this.pino = getLogger(clazz, "class");
+    this.baseMetadata = Object.freeze(toMetadataRecord(metadata));
+  }
+
+  child(component: string, metadata?: LoggerMetadata): ScopedLogger;
+  child(metadata: LoggerMetadata): ScopedLogger;
+  child(
+    componentOrMetadata: string | LoggerMetadata,
+    metadata: LoggerMetadata = {},
+  ): ScopedLogger {
+    const component =
+      typeof componentOrMetadata === "string"
+        ? joinComponent(this.component, componentOrMetadata)
+        : this.component;
+    const childMetadata =
+      typeof componentOrMetadata === "string"
+        ? metadata
+        : componentOrMetadata;
+
+    return new ScopedLogger(
+      this.clazz,
+      this.options,
+      this.batch,
+      { ...this.baseMetadata, ...toMetadataRecord(childMetadata) },
+      component,
+    );
+  }
+
+  withMetadata(metadata: LoggerMetadata): ScopedLogger {
+    return this.child(metadata);
+  }
+
+  async flush(): Promise<void> {
+    await this.batch.flush();
+    await flushParentLogger();
+  }
+
+  async close(): Promise<void> {
+    await this.batch.close();
+    await closeParentLogger();
   }
 
   info(message: string, ...args: unknown[]) {
@@ -48,6 +97,8 @@ export class ScopedLogger {
   }
 
   private log(level: LogLevel, message: string, ...args: unknown[]) {
+    if (isParentLoggerClosed() || isTransportLoggingSuppressed()) return;
+
     let metadata: Record<string, unknown> | undefined = {};
     let formatArgs = args;
 
@@ -60,10 +111,7 @@ export class ScopedLogger {
       !Array.isArray(args[args.length - 1]) &&
       !hasPlaceholders // 🔥 WICHTIG
     ) {
-      metadata = safeSerialize(args[args.length - 1]) as Record<
-        string,
-        unknown
-      >;
+      metadata = toMetadataRecord(args[args.length - 1]);
       formatArgs = args.slice(0, -1);
     }
 
@@ -72,14 +120,15 @@ export class ScopedLogger {
     const msg = format(message, ...normalizedArgs);
     const extractedArgs = mapArgsToMetadata(message, formatArgs);
 
-    const trace = TraceContextExtractor.current();
+    const contextMetadata = getCanonicalLogMetadata();
 
     metadata = {
+      ...this.baseMetadata,
       ...extractedArgs,
       ...metadata,
       clazz: this.clazz,
-      // traceId: trace?.traceId,
-      // spanId: trace?.spanId,
+      ...(this.component ? { component: this.component } : {}),
+      ...contextMetadata,
     };
 
     const log: LogDTO = {
@@ -92,18 +141,24 @@ export class ScopedLogger {
 
     const pinoLevel: PinoLevel = level;
 
-    this.pino[pinoLevel](
-      {
-        class: this.clazz,
-        service: this.options.serviceName,
-        // ...metadata,
-        traceId: trace?.traceId,
-        spanId: trace?.spanId,
-      },
-      msg,
-    );
+    try {
+      this.pino[pinoLevel](
+        {
+          class: this.clazz,
+          service: this.options.serviceName,
+          ...metadata,
+        },
+        msg,
+      );
+    } catch {
+      // Pino transport failure must not affect application control flow.
+    }
 
-    this.batch.enqueue(log);
+    try {
+      this.batch.enqueue(log);
+    } catch {
+      // Custom transports and compatibility batch implementations are isolated.
+    }
   }
 }
 
@@ -178,4 +233,15 @@ function normalizeObject(value: unknown): unknown {
     return { ...value }; // 🔥 entfernt null prototype
   }
   return value;
+}
+
+function toMetadataRecord(value: unknown): Record<string, unknown> {
+  const serialized = safeSerialize(value);
+  return serialized && typeof serialized === "object" && !Array.isArray(serialized)
+    ? (serialized as Record<string, unknown>)
+    : {};
+}
+
+function joinComponent(parent: string | undefined, child: string): string {
+  return parent ? `${parent}.${child}` : child;
 }

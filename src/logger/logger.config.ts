@@ -48,6 +48,8 @@ const transport = pino.transport({
   targets,
 });
 
+transport.on("error", reportTransportFailure);
+
 export const parentLogger = pino(
   {
     level: logLevel,
@@ -58,3 +60,114 @@ export const parentLogger = pino(
   },
   transport,
 );
+
+let hooksInstalled = false;
+let runtimeClosed = false;
+let activeFlush: Promise<void> | undefined;
+let activeClose: Promise<void> | undefined;
+let writingFallback = false;
+
+const beforeExitHandler = () => {
+  void flushParentLogger();
+};
+const sigintHandler = () => {
+  shutdownAndResignal("SIGINT");
+};
+const sigtermHandler = () => {
+  shutdownAndResignal("SIGTERM");
+};
+
+export function flushParentLogger(): Promise<void> {
+  if (runtimeClosed) return Promise.resolve();
+  if (activeFlush) return activeFlush;
+
+  const flushing = new Promise<void>((resolveFlush) => {
+    try {
+      parentLogger.flush(() => resolveFlush());
+    } catch {
+      resolveFlush();
+    }
+  }).finally(() => {
+    activeFlush = undefined;
+  });
+  activeFlush = flushing;
+  return flushing;
+}
+
+export function closeParentLogger(): Promise<void> {
+  if (activeClose) return activeClose;
+  if (runtimeClosed) return Promise.resolve();
+
+  activeClose = (async () => {
+    await flushParentLogger();
+
+    try {
+      transport.flushSync();
+    } catch {
+      // Logging shutdown must never fail application shutdown.
+    }
+
+    try {
+      transport.end();
+    } catch {
+      // A previously closed worker is already in the desired state.
+    }
+
+    runtimeClosed = true;
+    removeLoggerShutdownHooks();
+  })();
+
+  return activeClose;
+}
+
+export function installLoggerShutdownHooks(): void {
+  if (hooksInstalled) return;
+  hooksInstalled = true;
+  process.once("beforeExit", beforeExitHandler);
+  process.once("SIGINT", sigintHandler);
+  process.once("SIGTERM", sigtermHandler);
+}
+
+export function removeLoggerShutdownHooks(): void {
+  if (!hooksInstalled) return;
+  hooksInstalled = false;
+  process.removeListener("beforeExit", beforeExitHandler);
+  process.removeListener("SIGINT", sigintHandler);
+  process.removeListener("SIGTERM", sigtermHandler);
+}
+
+export function isParentLoggerClosed(): boolean {
+  return runtimeClosed;
+}
+
+export function loggerRuntimeDiagnostics() {
+  return {
+    closed: runtimeClosed,
+    hooksInstalled,
+  };
+}
+
+function shutdownAndResignal(signal: "SIGINT" | "SIGTERM"): void {
+  void closeParentLogger().finally(() => {
+    try {
+      process.kill(process.pid, signal);
+    } catch {
+      process.exitCode = signal === "SIGINT" ? 130 : 143;
+    }
+  });
+}
+
+function reportTransportFailure(error: Error): void {
+  if (writingFallback) return;
+  writingFallback = true;
+
+  try {
+    process.stderr.write(
+      `[omnixys/logger] transport failure: ${error.message}\n`,
+    );
+  } catch {
+    // The fallback itself is best effort and must not recurse into logging.
+  } finally {
+    writingFallback = false;
+  }
+}

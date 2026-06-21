@@ -18,6 +18,16 @@ export class KafkaLogTransport implements LogTransport {
   async send(log: LogDTO): Promise<void> {
     const topic =
       (this.options.kafka?.topic as keyof KafkaEventRegistry) || KafkaTopics.logstream.log;
+    const actorId =
+      typeof log.metadata?.actorId === "string" ? log.metadata.actorId : "";
+    const tenantId =
+      typeof log.metadata?.tenantId === "string" ? log.metadata.tenantId : "";
+    const clazz =
+      typeof log.metadata?.clazz === "string"
+        ? log.metadata.clazz
+        : typeof log.metadata?.class === "string"
+          ? log.metadata.class
+          : undefined;
     
       await this.producer.send({
         topic,
@@ -26,10 +36,10 @@ export class KafkaLogTransport implements LogTransport {
           version: "1",
           service: log.service,
           operation: "Log",
-          clazz: log.metadata?.class,
+          clazz,
           type: "EVENT",
-          actorId: 'system', // TODO actor hinzufügen vom log context
-          tenantId: 'omnixys',
+          actorId,
+          tenantId,
         },
       });
   }

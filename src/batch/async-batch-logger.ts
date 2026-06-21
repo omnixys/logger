@@ -1,14 +1,41 @@
-import { Inject, Injectable, type OnModuleInit } from "@nestjs/common";
+import {
+  Inject,
+  Injectable,
+  type OnModuleDestroy,
+  type OnModuleInit,
+} from "@nestjs/common";
+import { ContextStore } from "@omnixys/observability";
+import { type ContextLogDTO, type LogDTO } from "@omnixys/shared";
 import { LOG_TRANSPORT, LOGGER_OPTIONS } from "../core/logger.constants.js";
 import type { LoggerModuleOptions } from "../core/logger.options.js";
 import type { LogTransport } from "../transport/log-transport.interface.js";
-import { ContextStore } from "@omnixys/observability";
-import { ContextLogDTO, LogDTO } from "@omnixys/shared";
+import { runWithTransportLoggingSuppressed } from "../transport/transport-recursion.guard.js";
+
+export interface BatchLoggerDiagnostics {
+  readonly initialized: boolean;
+  readonly closing: boolean;
+  readonly closed: boolean;
+  readonly flushing: boolean;
+  readonly buffered: number;
+  readonly pending: number;
+  readonly sent: number;
+  readonly dropped: number;
+  readonly transportFailures: number;
+}
 
 @Injectable()
-export class AsyncBatchLogger implements OnModuleInit {
+export class AsyncBatchLogger implements OnModuleInit, OnModuleDestroy {
   private buffer: ContextLogDTO[] = [];
+  private readonly pendingSends = new Set<Promise<void>>();
   private timer?: NodeJS.Timeout;
+  private initialized = false;
+  private closing = false;
+  private closed = false;
+  private activeFlush?: Promise<void>;
+  private activeClose?: Promise<void>;
+  private sent = 0;
+  private dropped = 0;
+  private transportFailures = 0;
 
   constructor(
     @Inject(LOGGER_OPTIONS)
@@ -17,37 +44,162 @@ export class AsyncBatchLogger implements OnModuleInit {
     private readonly transport: LogTransport,
   ) {}
 
-  onModuleInit() {
-    if (!this.options.batch?.enabled) return;
+  onModuleInit(): void {
+    if (this.initialized || !this.options.batch?.enabled) return;
+    this.initialized = true;
 
     this.timer = setInterval(
-      () => this.flush(),
-      this.options.batch.flushInterval ?? 2000,
+      () => void this.flush(),
+      positiveInteger(this.options.batch.flushInterval, 2_000),
     );
+    this.timer.unref?.();
   }
 
-  enqueue(log: LogDTO) {
-    if (!this.options.batch?.enabled) {
-      this.transport.send(log);
+  enqueue(log: LogDTO): void {
+    if (this.closing || this.closed) {
+      this.dropped += 1;
       return;
     }
 
-    const ctx = ContextStore.capture(); // 🔥 NO OTel import
+    if (!this.options.batch?.enabled) {
+      this.trackPendingSend(this.safeSend(log));
+      return;
+    }
 
-    this.buffer.push({ log, ctx });
+    const maxBufferSize = positiveInteger(
+      this.options.batch.maxBufferSize,
+      Math.max(positiveInteger(this.options.batch.maxSize, 50) * 10, 1_000),
+    );
 
-    if (this.buffer.length >= (this.options.batch.maxSize ?? 50)) {
-      this.flush();
+    if (this.buffer.length >= maxBufferSize) {
+      this.dropped += 1;
+      if (this.options.batch.overflowStrategy === "drop-newest") return;
+      this.buffer.shift();
+    }
+
+    this.buffer.push({ log, ctx: ContextStore.capture() });
+
+    if (
+      this.buffer.length >= positiveInteger(this.options.batch.maxSize, 50)
+    ) {
+      void this.flush();
     }
   }
-  private async flush() {
-    const batch = [...this.buffer];
-    this.buffer = [];
 
-    await Promise.all(
-      batch.map(({ log, ctx }) =>
-        ContextStore.run(ctx, () => this.transport.send(log)),
-      ),
-    );
+  flush(): Promise<void> {
+    if (this.closed) return Promise.resolve();
+    if (this.activeFlush) return this.activeFlush;
+
+    this.activeFlush = this.drain().finally(() => {
+      this.activeFlush = undefined;
+    });
+    return this.activeFlush;
   }
+
+  close(): Promise<void> {
+    if (this.activeClose) return this.activeClose;
+    if (this.closed) return Promise.resolve();
+
+    this.closing = true;
+    this.stopTimer();
+    this.activeClose = (async () => {
+      try {
+        do {
+          await this.flush();
+        } while (this.buffer.length > 0 || this.pendingSends.size > 0);
+        await this.safeTransportOperation(() => this.transport.close?.());
+      } finally {
+        this.closed = true;
+      }
+    })();
+
+    return this.activeClose;
+  }
+
+  diagnostics(): BatchLoggerDiagnostics {
+    return {
+      initialized: this.initialized,
+      closing: this.closing,
+      closed: this.closed,
+      flushing: this.activeFlush !== undefined,
+      buffered: this.buffer.length,
+      pending: this.pendingSends.size,
+      sent: this.sent,
+      dropped: this.dropped,
+      transportFailures: this.transportFailures,
+    };
+  }
+
+  onModuleDestroy(): Promise<void> {
+    return this.close();
+  }
+
+  private async drain(): Promise<void> {
+    while (this.buffer.length > 0) {
+      const batch = this.buffer.splice(0, this.buffer.length);
+      await Promise.all(
+        batch.map(({ log, ctx }) =>
+          ContextStore.run(ctx, () => this.safeSend(log)),
+        ),
+      );
+    }
+
+    while (this.pendingSends.size > 0) {
+      await Promise.all([...this.pendingSends]);
+    }
+
+    await this.safeTransportOperation(() => this.transport.flush?.());
+  }
+
+  private async safeSend(log: LogDTO): Promise<void> {
+    const maxRetries = nonNegativeInteger(this.options.batch?.maxRetries, 0);
+
+    for (let attempt = 0; attempt <= maxRetries; attempt += 1) {
+      try {
+        await runWithTransportLoggingSuppressed(() => this.transport.send(log));
+        this.sent += 1;
+        return;
+      } catch {
+        this.transportFailures += 1;
+      }
+    }
+
+    this.dropped += 1;
+  }
+
+  private trackPendingSend(pending: Promise<void>): void {
+    this.pendingSends.add(pending);
+    void pending.finally(() => this.pendingSends.delete(pending));
+  }
+
+  private async safeTransportOperation(
+    operation: () => Promise<void> | undefined,
+  ): Promise<void> {
+    try {
+      await operation();
+    } catch {
+      this.transportFailures += 1;
+    }
+  }
+
+  private stopTimer(): void {
+    if (!this.timer) return;
+    clearInterval(this.timer);
+    this.timer = undefined;
+  }
+}
+
+function positiveInteger(value: number | undefined, fallback: number): number {
+  return Number.isInteger(value) && value !== undefined && value > 0
+    ? value
+    : fallback;
+}
+
+function nonNegativeInteger(
+  value: number | undefined,
+  fallback: number,
+): number {
+  return Number.isInteger(value) && value !== undefined && value >= 0
+    ? value
+    : fallback;
 }

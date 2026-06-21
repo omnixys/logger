@@ -4,9 +4,11 @@ import {
   Injectable,
   type NestInterceptor,
 } from "@nestjs/common";
+import { ContextAccessor } from "@omnixys/context";
 
 import { type Observable, tap } from "rxjs";
 import { OmnixysLogger } from "../logger/omnixys-logger.js";
+import { getCanonicalLogMetadata } from "../logger/context-log-metadata.js";
 
 type HttpRequest = {
   method?: string;
@@ -39,9 +41,14 @@ export class LoggingInterceptor implements NestInterceptor {
 
     const url = request.originalUrl ?? request.url ?? "UNKNOWN";
 
-    const userAgent = request.headers?.["user-agent"];
-    const ip = request.ip ?? request.headers?.["x-forwarded-for"];
-    const userId = request.user?.id;
+    const requestContext = ContextAccessor.get();
+    const userAgent =
+      requestContext?.client.userAgent ?? request.headers?.["user-agent"];
+    const ip = requestContext?.client.ip ?? request.ip;
+    const userId =
+      requestContext?.principal?.userId ??
+      requestContext?.principal?.actorId ??
+      request.user?.id;
 
     const log = this.logger.log("http.request");
 
@@ -53,6 +60,7 @@ export class LoggingInterceptor implements NestInterceptor {
       ip,
       userAgent,
       userId,
+      ...getCanonicalLogMetadata(),
     });
 
     return next.handle().pipe(
@@ -67,6 +75,7 @@ export class LoggingInterceptor implements NestInterceptor {
             duration,
             ip,
             userId,
+            ...getCanonicalLogMetadata(),
           });
         },
         error: (err: unknown) => {
@@ -79,6 +88,7 @@ export class LoggingInterceptor implements NestInterceptor {
             duration,
             ip,
             userId,
+            ...getCanonicalLogMetadata(),
             error: normalizeError(err),
           });
         },

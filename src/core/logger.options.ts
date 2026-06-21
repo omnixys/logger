@@ -9,6 +9,9 @@ export interface LoggerModuleOptions {
   batch?: {
     enabled?: boolean;
     maxSize?: number;
+    maxBufferSize?: number;
     flushInterval?: number;
+    maxRetries?: number;
+    overflowStrategy?: "drop-oldest" | "drop-newest";
   };
 }

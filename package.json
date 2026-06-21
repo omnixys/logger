@@ -22,6 +22,8 @@
   "sideEffects": false,
   "scripts": {
     "build": "tsc -p tsconfig.json",
+    "test": "pnpm run build && node --test test/*.test.mjs",
+    "test:types": "pnpm run build && tsc -p tsconfig.type-tests.json",
     "clean": "rimraf dist",
     "patch": "pnpm version patch",
     "release": "semantic-release",
@@ -38,8 +40,12 @@
     "@commitlint/cli": "^20.5.0",
     "@commitlint/config-conventional": "^20.4.2",
     "@nestjs/core": "^11.1.17",
+    "@opentelemetry/api": "^1.9.0",
+    "@opentelemetry/context-async-hooks": "^2.6.0",
+    "@opentelemetry/sdk-trace-base": "^2.6.0",
+    "@omnixys/context": "file:../context",
     "@omnixys/kafka": "^1.0.0",
-    "@omnixys/observability": "^1.0.0",
+    "@omnixys/observability": "file:../observability",
     "@omnixys/shared": "^1.0.0",
     "@semantic-release/changelog": "^6.0.3",
     "@semantic-release/commit-analyzer": "^13.0.1",
@@ -56,9 +62,11 @@
   "peerDependencies": {
     "@nestjs/common": "^11.0.0",
     "@nestjs/core": "^11.1.17",
+    "@omnixys/context": "^1.0.0",
     "@omnixys/kafka": "^1.0.0",
     "@omnixys/observability": "^1.0.0",
-    "@omnixys/shared": "^1.0.0"
+    "@omnixys/shared": "^1.0.0",
+    "@opentelemetry/api": "^1.9.0"
   },
   "dependencies": {
     "pino": "^10.3.1",
