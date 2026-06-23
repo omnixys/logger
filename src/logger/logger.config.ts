@@ -1,11 +1,19 @@
 import { resolve } from "node:path";
 import pino, { type TransportTargetOptions } from "pino";
 
-const { NODE_ENV, LOG_DIRECTORY, LOG_FILE_DEFAULT_NAME, LOG_PRETTY, LOG_LEVEL, SERVICE_NAME } =
-  process.env;
+const {
+  NODE_ENV,
+  LOG_DIRECTORY,
+  LOG_FILE_DEFAULT_NAME,
+  LOG_PRETTY,
+  LOG_LEVEL,
+  LOG_TO_FILE,
+  SERVICE_NAME,
+} = process.env;
 
 const logFile = resolve(LOG_DIRECTORY ?? "log", LOG_FILE_DEFAULT_NAME ?? "server.log");
 const isProd = NODE_ENV === "production";
+const logToFile = LOG_TO_FILE === "true";
 
 const logLevel = (isProd ? "info" : (LOG_LEVEL ?? "debug")) as
   | "fatal"
@@ -15,9 +23,9 @@ const logLevel = (isProd ? "info" : (LOG_LEVEL ?? "debug")) as
   | "debug"
   | "trace";
 
-const pretty = NODE_ENV !== "production" && (LOG_PRETTY === undefined || LOG_PRETTY === "true");
+const pretty = !isProd && (LOG_PRETTY === undefined || LOG_PRETTY === "true");
 
-const fileTarget = {
+const fileTarget: TransportTargetOptions = {
   level: logLevel,
   target: "pino/file",
   options: {
@@ -26,7 +34,7 @@ const fileTarget = {
   },
 };
 
-const prettyTarget = {
+const prettyTarget: TransportTargetOptions = {
   level: logLevel,
   target: "pino-pretty",
   options: {
@@ -37,18 +45,22 @@ const prettyTarget = {
   },
 };
 
-const targets: TransportTargetOptions[] = pretty
-  ? [fileTarget, prettyTarget]
-  : isProd
-    ? [fileTarget]
-    : [prettyTarget];
+const targets: TransportTargetOptions[] = [];
+if (logToFile) targets.push(fileTarget);
+if (pretty) targets.push(prettyTarget);
 
-const transport = pino.transport({
-  // targets: pretty ? [fileTarget, prettyTarget] : [fileTarget],
-  targets,
-});
+const useTransport = targets.length > 0;
+const transport = useTransport ? pino.transport({ targets }) : undefined;
 
-transport.on("error", reportTransportFailure);
+if (transport) {
+  transport.on("error", (err: Error) => {
+    try {
+      process.stderr.write(`[omnixys/logger] transport failure: ${err.message}\n`);
+    } catch {
+      // best-effort fallback
+    }
+  });
+}
 
 export const parentLogger = pino(
   {
@@ -58,14 +70,13 @@ export const parentLogger = pino(
       service: SERVICE_NAME ?? "unknown",
     },
   },
-  transport,
+  ...(transport ? [transport] : []),
 );
 
 let hooksInstalled = false;
 let runtimeClosed = false;
 let activeFlush: Promise<void> | undefined;
 let activeClose: Promise<void> | undefined;
-let writingFallback = false;
 
 const beforeExitHandler = () => {
   void flushParentLogger();
@@ -101,16 +112,18 @@ export function closeParentLogger(): Promise<void> {
   activeClose = (async () => {
     await flushParentLogger();
 
-    try {
-      transport.flushSync();
-    } catch {
-      // Logging shutdown must never fail application shutdown.
-    }
+    if (transport) {
+      try {
+        transport.flushSync();
+      } catch {
+        // Logging shutdown must never fail application shutdown.
+      }
 
-    try {
-      transport.end();
-    } catch {
-      // A previously closed worker is already in the desired state.
+      try {
+        transport.end();
+      } catch {
+        // A previously closed worker is already in the desired state.
+      }
     }
 
     runtimeClosed = true;
@@ -157,17 +170,4 @@ function shutdownAndResignal(signal: "SIGINT" | "SIGTERM"): void {
   });
 }
 
-function reportTransportFailure(error: Error): void {
-  if (writingFallback) return;
-  writingFallback = true;
 
-  try {
-    process.stderr.write(
-      `[omnixys/logger] transport failure: ${error.message}\n`,
-    );
-  } catch {
-    // The fallback itself is best effort and must not recurse into logging.
-  } finally {
-    writingFallback = false;
-  }
-}

@@ -91,6 +91,72 @@ test("HTTP logging fallback never reads x-forwarded-for directly", async () => {
   assert.equal(entries[0].ip, "10.0.0.8");
 });
 
+test("interceptor does not crash when ContextAccessor.get() returns undefined", async () => {
+  const entries = [];
+  const interceptor = new LoggingInterceptor({
+    log: () => ({
+      info: (message, metadata) => entries.push({ message, metadata }),
+      error: (message, metadata) => entries.push({ message, metadata }),
+    }),
+  });
+  const executionContext = {
+    getType: () => "http",
+    switchToHttp: () => ({
+      getRequest: () => ({
+        method: "GET",
+        url: "/health",
+        ip: "10.0.0.8",
+        headers: { "user-agent": "direct-agent" },
+      }),
+      getResponse: () => ({ statusCode: 200 }),
+    }),
+  };
+
+  await lastValueFrom(
+    interceptor.intercept(executionContext, { handle: () => of("ok") }),
+  );
+
+  assert.equal(entries[0].metadata.ip, "10.0.0.8");
+  assert.equal(entries[0].metadata.userAgent, "direct-agent");
+});
+
+test("interceptor handles empty ContextAccessor client gracefully", async () => {
+  const entries = [];
+  const interceptor = new LoggingInterceptor({
+    log: () => ({
+      info: (message, metadata) => entries.push({ message, metadata }),
+      error: (message, metadata) => entries.push({ message, metadata }),
+    }),
+  });
+  const executionContext = {
+    getType: () => "http",
+    switchToHttp: () => ({
+      getRequest: () => ({
+        method: "GET",
+        url: "/test",
+        ip: "192.168.1.1",
+        headers: {},
+      }),
+      getResponse: () => ({ statusCode: 200 }),
+    }),
+  };
+
+  await ContextAccessor.run(
+    {
+      requestId: "no-client-test",
+      correlationId: "no-client-test",
+      startedAtEpochMs: Date.now(),
+      transport: { type: "http" },
+    },
+    () =>
+      lastValueFrom(
+        interceptor.intercept(executionContext, { handle: () => of("ok") }),
+      ),
+  );
+
+  assert.equal(entries[0].metadata.ip, "192.168.1.1");
+});
+
 test("GraphQL operations are logged with canonical request metadata", async () => {
   const entries = [];
   const interceptor = new LoggingInterceptor({

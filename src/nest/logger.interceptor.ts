@@ -46,12 +46,12 @@ export class LoggingInterceptor implements NestInterceptor {
 
     const requestContext = ContextAccessor.get();
     const userAgent =
-      requestContext?.client.userAgent ?? request.headers?.["user-agent"];
-    const ip = requestContext?.client.ip ?? request.ip;
+      requestContext?.client?.userAgent ?? request?.headers?.["user-agent"];
+    const ip = requestContext?.client?.ip ?? request?.ip;
     const userId =
       requestContext?.principal?.userId ??
       requestContext?.principal?.actorId ??
-      request.user?.id;
+      request?.user?.id;
 
     const log = this.logger.log("http.request");
 
