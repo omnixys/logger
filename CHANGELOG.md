@@ -3,6 +3,17 @@
 All notable changes in this project will be documented in this file.
 
 
+## [2.0.0](https://github.com/omnixys/logger/compare/v1.0.0...v2.0.0) (2026-06-23)
+
+### Logger
+
+* **Logger:** make file logging opt-in ([](https://github.com/omnixys/logger/commit/da563a55280a75560b11447aa910da243177723b))
+* **Logger:** add global GraphQL request logging ([](https://github.com/omnixys/logger/commit/dce574d92e20364479729b401ea979f3278c17fb))
+* **Logger:** complete P0 logger hardening and context integration ([](https://github.com/omnixys/logger/commit/78fc76dcc8380c9612f96bdf4790bf31f52b69f3))
+* **Logger:** expose lightweight logger token ([](https://github.com/omnixys/logger/commit/08bc804ef832d8b6ebb946b9385d26744b6be385))
+* **Logger:** use lightweight context accessor ([](https://github.com/omnixys/logger/commit/4688da4b2b69e572db62f281b9157b4c7b853a68))
+* **Logger:** consume canonical log contracts ([](https://github.com/omnixys/logger/commit/a7539ba5bf0b01583a73fef0172d1bc195ffa3ef))
+
 ## 1.0.0 (2026-04-15)
 
 ### ⚠ BREAKING CHANGE
