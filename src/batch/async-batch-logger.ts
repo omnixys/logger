@@ -137,11 +137,9 @@ export class AsyncBatchLogger implements OnModuleInit, OnModuleDestroy {
   private async drain(): Promise<void> {
     while (this.buffer.length > 0) {
       const batch = this.buffer.splice(0, this.buffer.length);
-      await Promise.all(
-        batch.map(({ log, ctx }) =>
-          ContextStore.run(ctx, () => this.safeSend(log)),
-        ),
-      );
+      for (const { log, ctx } of batch) {
+        await ContextStore.run(ctx, () => this.safeSend(log));
+      }
     }
 
     while (this.pendingSends.size > 0) {
