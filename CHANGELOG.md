@@ -3,6 +3,12 @@
 All notable changes in this project will be documented in this file.
 
 
+## [2.0.1](https://github.com/omnixys/logger/compare/v2.0.0...v2.0.1) (2026-06-24)
+
+### Context
+
+* **Context:** Update async-batch-logger.ts ([](https://github.com/omnixys/logger/commit/63fce0d2c82c3ca752855edad44d89a94e205c76))
+
 ## [2.0.0](https://github.com/omnixys/logger/compare/v1.0.0...v2.0.0) (2026-06-23)
 
 ### Logger
