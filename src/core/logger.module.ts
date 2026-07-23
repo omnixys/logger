@@ -2,7 +2,7 @@ import { type DynamicModule, Global, Module } from "@nestjs/common";
 import { APP_INTERCEPTOR } from "@nestjs/core";
 import { AsyncBatchLogger } from "../batch/async-batch-logger.js";
 import { OmnixysLogger } from "../logger/omnixys-logger.js";
-import { NoopLogTransport } from "../transport/noop-log.transport.js";
+import { OtelLogTransport } from "../transport/otel-log.transport.js";
 import { installLoggerShutdownHooks } from "../logger/logger.config.js";
 import { LOG_TRANSPORT, LOGGER_OPTIONS } from "./logger.constants.js";
 import type { LoggerModuleOptions } from "./logger.options.js";
@@ -29,7 +29,7 @@ export class LoggerModule {
           ? [{ provide: APP_INTERCEPTOR, useExisting: LoggingInterceptor }]
           : []),
 
-        { provide: LOG_TRANSPORT, useClass: NoopLogTransport },
+        { provide: LOG_TRANSPORT, useClass: OtelLogTransport },
       ],
       exports: [OmnixysLogger, OMNIXYS_LOGGER, LoggingInterceptor],
     };

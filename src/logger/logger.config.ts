@@ -67,7 +67,7 @@ export const parentLogger = pino(
     level: logLevel,
     base: {
       env: NODE_ENV,
-      service: SERVICE_NAME ?? "unknown",
+      service: SERVICE_NAME ?? process.env.SERVICE ?? "unknown",
     },
   },
   ...(transport ? [transport] : []),
@@ -169,5 +169,4 @@ function shutdownAndResignal(signal: "SIGINT" | "SIGTERM"): void {
     }
   });
 }
-
 
