@@ -1,6 +1,6 @@
 {
   "name": "@omnixys/logger",
-  "version": "3.0.0",
+  "version": "3.1.0",
   "description": "A NestJS logger module for microservices, providing structured logging and integration with various log transports.",
   "type": "module",
   "private": false,

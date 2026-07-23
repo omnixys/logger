@@ -3,6 +3,14 @@
 All notable changes in this project will be documented in this file.
 
 
+## [3.1.0](https://github.com/omnixys/logger/compare/v3.0.0...v3.1.0) (2026-07-23)
+
+### Logger
+
+* **Logger:** bridge canonical logs to OpenTelemetry ([](https://github.com/omnixys/logger/commit/6e5d8cd7c42cc8cce6181dc8d220a895a0a166f6))
+* **Logger:** populate traceContext on LogDTO from active OTel context ([](https://github.com/omnixys/logger/commit/aafe250d14dd90731e7c928e63a3e455f4ea5d07))
+* **Logger:** remove Kafka log transport ([](https://github.com/omnixys/logger/commit/75ff6984989ec0bc23573a9929c4743d6a9be659))
+
 ## [3.0.0](https://github.com/omnixys/logger/compare/v2.0.1...v3.0.0) (2026-07-15)
 
 ### Update
