@@ -4,11 +4,6 @@ export interface LoggerModuleOptions {
   /** Register request logging globally for HTTP and GraphQL operations. */
   registerGlobalInterceptor?: boolean;
 
-  kafka?: {
-    enabled?: boolean;
-    topic?: string;
-  };
-
   batch?: {
     enabled?: boolean;
     maxSize?: number;

@@ -2,7 +2,6 @@ import { type DynamicModule, Global, Module } from "@nestjs/common";
 import { APP_INTERCEPTOR } from "@nestjs/core";
 import { AsyncBatchLogger } from "../batch/async-batch-logger.js";
 import { OmnixysLogger } from "../logger/omnixys-logger.js";
-import { KafkaLogTransport } from "../transport/kafka-log.transport.js";
 import { NoopLogTransport } from "../transport/noop-log.transport.js";
 import { installLoggerShutdownHooks } from "../logger/logger.config.js";
 import { LOG_TRANSPORT, LOGGER_OPTIONS } from "./logger.constants.js";
@@ -30,12 +29,7 @@ export class LoggerModule {
           ? [{ provide: APP_INTERCEPTOR, useExisting: LoggingInterceptor }]
           : []),
 
-        {
-          provide: LOG_TRANSPORT,
-          useClass: options.kafka?.enabled
-            ? KafkaLogTransport
-            : NoopLogTransport,
-        },
+        { provide: LOG_TRANSPORT, useClass: NoopLogTransport },
       ],
       exports: [OmnixysLogger, OMNIXYS_LOGGER, LoggingInterceptor],
     };
