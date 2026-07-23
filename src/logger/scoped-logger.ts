@@ -137,6 +137,10 @@ export class ScopedLogger {
       service: this.options.serviceName,
       timestamp: new Date().toISOString(),
       metadata,
+      traceContext: {
+        traceId: contextMetadata.traceId,
+        spanId: contextMetadata.spanId,
+      },
     };
 
     const pinoLevel: PinoLevel = level;
